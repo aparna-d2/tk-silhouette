@@ -29,6 +29,17 @@ class SilhouetteEngine(Engine):
 
         return host_info
 
+    @property
+    def utils(self):
+        """
+        Expose the utils module through the engine for common use by all apps
+        """
+        if not hasattr(self, "utils_module"):
+            tk_silhouette = self.import_module("tk_silhouette")
+            self.utils_module = tk_silhouette.utils
+        return self.utils_module
+
+
     def create_shotgun_menu(self):
         if self.has_ui:
             # get all environments
@@ -148,7 +159,14 @@ class SilhouetteEngine(Engine):
 
     @property
     def has_ui(self):
-        return True
+        try:
+            import fx
+            if fx.gui:
+                return True
+        except:
+            pass
+        return False
+
 
     ##########################################################################################
     # logging
@@ -163,17 +181,9 @@ class SilhouetteEngine(Engine):
 
         print msg
 
-    # def _create_dialog(self, title, bundle, widget, parent):
-    #     from sgtk.platform.qt import QtCore
-    #     dialog = super(SilhouetteEngine, self)._create_dialog(title, bundle, widget, parent)
-    #     dialog.setWindowFlags(dialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-    #     dialog.setWindowState(
-    #         (dialog.windowState() & ~QtCore.Qt.WindowMinimized) | QtCore.Qt.WindowActive)
-    #     dialog.raise_()
-    #     dialog.activateWindow()
-    #     return dialog
-
     ##########################################################################################
+    # silhouette specific functions
+
     def __write_silhouette_action(self, command_name, action_class):
         """
         Write a silhouette action which will be enabled
