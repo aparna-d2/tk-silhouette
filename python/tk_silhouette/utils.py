@@ -1,8 +1,10 @@
 import os
+import glob
 import re
 import fx
 
 import sgtk
+from sgtk import TankError
 
 # sources have path format /path/to/file.[start-end].ext
 SILHOUETTE_FRAME_REGEX = "\.\[(\d+)-\d+\]\."
@@ -153,8 +155,10 @@ def sequence_range_from_path(path):
     # We know that the search will result in a match at this point, otherwise
     # the glob wouldn't have found the file. We can search and pull group 1
     # to get the integer frame number from the file root name.
-    frames = [int(re.search(frame_pattern, f).group(1)) for f in file_roots]
-    return min(frames), max(frames)
+    file_roots.sort()
+    min_frame = re.search(frame_pattern, file_roots[0]).group(1)
+    max_frame = re.search(frame_pattern, file_roots[-1]).group(1)
+    return min_frame, max_frame
 
 
 def find_sequence_range(tk, path):
@@ -200,5 +204,6 @@ def find_sequence_range(tk, path):
     if not frames:
         return None
 
-    # return the range
-    return min(frames), max(frames)
+    # return the padded frame range
+    seq_key = tk.template_keys["SEQ"]
+    return seq_key.str_from_value(min(frames)), seq_key.str_from_value(max(frames))
